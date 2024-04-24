@@ -43,19 +43,18 @@ During Step 3, two segments die and two more are born.
 
 During Step 4, two segments die and two more are born, and we realize it's in an infinite loop between this state and the previous state.
 
-## Carrier PCB Setup
+## Running the Automata
 
+If using the actual hardware (the ASIC on the standard Tiny Tapeout carrier PCB):
 * Ensure the Scan Chain Control is set to Internal (the default)
 * Ensure the Clock Source Select jumper is set to On-Board (the default)
 * Select this Tiny Tapeout project from the 256 possibilities by setting the Select Project dipswitches to project 2 (i.e. dip switch 2 on, all others off)
 * Remove the Slow Clock jumper from the PCB and save it (this will be used for automatic mode below)
 * Power up the system
 
-## Running the Automata
+On power-up, the segments will be initialized to an unpredictable state. You can also set them to a specific pattern as noted below.
 
-On power-up, the segments will be initialized to an unpredictable state. You can also set them to a specific pattern as noted below in "Setup".
-
-*Side note: earlier versions of this documentation, including the docs released on the tinytapeout site and perhaps the simulator, refer to input dip switches #1-#8. However, the carrier PCB as received back labels them as inputs 0 to 7. For clarity, I've updated this copy of the documentation to use their 0-7 value.*
+*Side note: Earlier versions of this documentation, including the docs released to the tinytapeout site and perhaps the simulator, refer to input dip switches #1-#8. However, I see the carrier PCB as received back labels them as inputs 0 to 7. For clarity, I've updated this copy of the documentation to use their 0-7 value instead.*
 
 To run the automaton step by step, ensure we are in manual clock stepping mode:
 * In the Wokwi simulator, this involves setting the PCB clock slide switch to the "manual clock" position (not "system clock")
@@ -65,13 +64,13 @@ Set dip switch input #3 to on (enabling "Run" mode).
 
 Ensure dip switch inputs #4,5,6 are off (these are used to enable a clock divider when running in automatic mode, see below, but interfere with manual stepping).
 
-Now, toggle dip switch 0 off and on (on the physical hardware, you can use the convenient debounced CLK pushbutton which is connected to input 0) repeatedly to step the simulation forward.
+Now, toggle dip switch 0 off and on repeatedly to step the simulation forward (on the physical hardware, you can use the convenient debounced CLK pushbutton which is connected to input 0)
 
 ### Free Running
 
-If you have dip switch #4 on but instead have the system clock enabled (simulation: PCB clock slide switch to the "system clock" position, real hardware: Slow Clock jumper attached), the automaton will advance every system clock cycle.
+If you have dip switch #3 on but instead have the system clock enabled (in simulation: PCB clock slide switch to the "system clock" position, in real hardware: Slow Clock jumper attached), the automaton will advance every system clock cycle.
 
-However, this will run it too fast to see by eye. To slow it down, first configure the PCB-level clock divider to its slowest speed, which I believe should set the clock to 6250Hz/256 ~ 24Hz (on the physical hardware, do this by setting all of dip switches #0-#7 to on before you attach the Slow Clock jumper, to fix the clock divider ratio, then reset all the dip switches to off). Then use some combination of dip switches 5, 6, and 7 to further slow it down via clock dividers fabricated into logic gates for this project. Turning on dip switch 5 divides the clock by 8, dip switch 6 divides the clock by 4, and dip switch 7 divides the clock by 2. So turning on dip switches 5 and 7 should give you a clock of ~1.5Hz. (**to be measured on actual hardware**)
+However, this will run it too fast to see by eye. To slow it down, first configure the PCB-level clock divider to its slowest speed, which I believe should set the clock to 6250Hz/256 ~ 24Hz (on the physical hardware, do this by setting all of dip switches #0-#7 to on before you attach the Slow Clock jumper, to fix the clock divider ratio, then reset all the dip switches to off). Then use some combination of dip switches 5, 6, and 7 to further slow it down via clock dividers fabricated into logic gates in this project. Turning on dip switch 5 divides the clock by 8, dip switch 6 divides the clock by an additional 4, and dip switch 7 divides the clock by an additional 2, giving you a range of anywhere from /1 to /64 clock scaling. So, turning on dip switches 5 and 7 should give you a clock of ~1.5Hz. (**to be measured on actual hardware**)
 
 ## Setting Initial Pattern
 
@@ -94,7 +93,7 @@ E   C
  DDD
 ```
 
-*Tip on the actual ASIC hardware: the pushbutton labeled "RESET" is a debounced input connected to dip switch input #1. So for loading 'dead' segments you can use this instead of painstakingly toggling that dip switch.*
+*Tip on the actual hardware: the pushbutton labeled "RESET" is a debounced input connected to dip switch input #1. So for loading 'dead' segments you can use this instead of painstakingly toggling that dip switch.*
 
 ### Example
 

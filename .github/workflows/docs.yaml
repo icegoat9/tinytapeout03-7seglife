@@ -12,11 +12,11 @@ jobs:
     steps:
     # need the repo checked out
     - name: checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     # tt tools
     - name: checkout tt tools repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: tinytapeout/tt-support-tools
         path: tt
@@ -27,7 +27,7 @@ jobs:
 
     # need python
     - name: setup python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
     - run: pip install -r tt/requirements.txt

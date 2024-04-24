@@ -1,10 +1,14 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg)
 
-An ASIC design for [Tiny Tapeout](https://tinytapeout.com) 03.
+An ASIC design for [Tiny Tapeout](https://tinytapeout.com) 03, made in a few evenings.
 
-This implements a very simple 7-segment [cellular automaton](https://en.wikipedia.org/wiki/Cellular_automaton) from ~200 basic logic gates, using the [Wokwi web-based logic editor](https://tinytapeout.com/digital_design/wokwi/). When the Tiny Tapeout ASIC is fabricated and mounted on its standard carrier PCB (with 8 dip switch inputs and a 7 segment display as output), it should run the below behavior in hardware.
+This implements a very simple 7-segment [cellular automaton](https://en.wikipedia.org/wiki/Cellular_automaton) from ~200 basic logic gates, using the [Wokwi web-based logic editor](https://tinytapeout.com/digital_design/wokwi/). When the Tiny Tapeout ASIC is fabricated and mounted on its standard carrier PCB (which includes 8 dip switch inputs and a 7 segment display as output), it should run the below behavior in hardware. 
 
-## Behavior
+**UPDATE:** A year later, in April 2024, I've received the fabricated ASIC... and it works! Here's a quick demo of loading an initial state into it and then putting it in run mode:
+
+https://github.com/icegoat9/tinytapeout03-7seglife/assets/85364179/1b4a4d1d-fc5b-4474-8d3c-11a35a0f6f34
+
+## Automata Behavior
 
 I played around with a few different rulesets and this one seemed the most interesting:
 
@@ -39,29 +43,44 @@ During Step 3, two segments die and two more are born.
 
 During Step 4, two segments die and two more are born, and we realize it's in an infinite loop between this state and the previous state.
 
-## Running
+## Carrier PCB Setup
 
-On power-up, the segments will be initialized to an unpredictable state.
-You can also set them to a specific pattern as noted below in "Setup".
+* Ensure the Scan Chain Control is set to Internal (the default)
+* Ensure the Clock Source Select jumper is set to On-Board (the default)
+* Select this Tiny Tapeout project from the 256 possibilities by setting the Select Project dipswitches to project 2 (i.e. dip switch 2 on, all others off)
+* Remove the Slow Clock jumper from the PCB and save it (this will be used for automatic mode below)
+* Power up the system
 
-To run the automaton step by step, first set dip switch #4 to on ("Run" mode).
+## Running the Automata
 
-Ensure dip switches #5,6,7 are off (these are used to enable a clock divider when running in automatic mode, see below, but interfere with manual stepping).
+On power-up, the segments will be initialized to an unpredictable state. You can also set them to a specific pattern as noted below in "Setup".
 
-Set the PCB clock slide switch to the "manual clock" position (not "system clock"), and then toggle dip switch 1 on to advance the automaton one step. Toggle dip switch 1 off and on again to step the simulation forward.
+*Side note: earlier versions of this documentation, including the docs released on the tinytapeout site and perhaps the simulator, refer to input dip switches #1-#8. However, the carrier PCB as received back labels them as inputs 0 to 7. For clarity, I've updated this copy of the documentation to use their 0-7 value.*
+
+To run the automaton step by step, ensure we are in manual clock stepping mode:
+* In the Wokwi simulator, this involves setting the PCB clock slide switch to the "manual clock" position (not "system clock")
+* On the actual hardware, ensure the Slow Clock jumper is removed
+
+Set dip switch input #3 to on (enabling "Run" mode). 
+
+Ensure dip switch inputs #4,5,6 are off (these are used to enable a clock divider when running in automatic mode, see below, but interfere with manual stepping).
+
+Now, toggle dip switch 0 off and on (on the physical hardware, you can use the convenient debounced CLK pushbutton which is connected to input 0) repeatedly to step the simulation forward.
 
 ### Free Running
 
-If you have dip switch #4 on but instead have the PCB clock slide switch to the "system clock" position, the automaton will advance every system clock cycle.
+If you have dip switch #4 on but instead have the system clock enabled (simulation: PCB clock slide switch to the "system clock" position, real hardware: Slow Clock jumper attached), the automaton will advance every system clock cycle.
 
-This will run it too fast to see by eye. To slow it down, first configure the PCB-level clock divider to its slowest speed, which I believe should set the clock to 6250Hz/256 ~ 24Hz. Then use dip switches 5, 6, and 7 to further slow it down. Turning on dip switch 5 divides the clock by 8, dip switch 6 divides the clock by 4, and dip switch 7 divides the clock by 2. So turning on dip switches 5 and 7 should give you a clock of ~1.5Hz.
+However, this will run it too fast to see by eye. To slow it down, first configure the PCB-level clock divider to its slowest speed, which I believe should set the clock to 6250Hz/256 ~ 24Hz (on the physical hardware, do this by setting all of dip switches #0-#7 to on before you attach the Slow Clock jumper, to fix the clock divider ratio, then reset all the dip switches to off). Then use some combination of dip switches 5, 6, and 7 to further slow it down via clock dividers fabricated into logic gates for this project. Turning on dip switch 5 divides the clock by 8, dip switch 6 divides the clock by 4, and dip switch 7 divides the clock by 2. So turning on dip switches 5 and 7 should give you a clock of ~1.5Hz. (**to be measured on actual hardware**)
 
 ## Setting Initial Pattern
 
-You can set the initial state to a specific pattern by using dip switches #2 and #3 to shift "alive" or "dead" states into memory:
-* First, set dip switch #4 to off ("Load" mode). The period in the 7-segment display should come on to remind you you're in Load mode.
-* If you cycle switch #2 to on, it loads a 0 ("dead") into segment A (the top segment), and shifts the values of all other segments to the following segments, in the A->G order shown below:
-* If you cycle switch #3 to on, it loads a 1 ("alive") into segment A (the top segment), and shifts the valuers of all other segments as above.
+You can set the initial state to a specific pattern by using dip switch inputs #1 and #2 to shift "alive" or "dead" states into memory:
+* First, set dip switch #3 to off ("Load" mode). The period in the 7-segment display will come on to remind you you're in Load mode.
+* If you cycle switch #1 to on, it loads a 0 ("dead") into segment A (the top segment), and shifts the values of all other segments to the following segments, in the A->G order shown below:
+* If you cycle switch #2 to on, it loads a 1 ("alive") into segment A (the top segment), and shifts the values of all other segments as above.
+
+*Caution: on the physical hardware, toggling dip switches on and off can be a bit glitchy due to lack of debouncing-- this may take a few tries*
 
 Don't forget to set switch #4 back to on ("Run") when you want to run the automaton!
 
@@ -75,11 +94,13 @@ E   C
  DDD
 ```
 
+*Tip on the actual ASIC hardware: the pushbutton labeled "RESET" is a debounced input connected to dip switch input #1. So for loading 'dead' segments you can use this instead of painstakingly toggling that dip switch.*
+
 ### Example
 
 ```
 Initial        After cycling        After cycling        After cycling
-state:         switch #3            switch #3 again      switch #2
+state:         switch #2            switch #2 again      switch #1
  ---               ███                  ███                  ---           
 |   |             |   |                |   █                |   █           
 |   |             |   |                |   █                |   █           
@@ -100,6 +121,16 @@ state:         switch #3            switch #3 again      switch #2
 * What is the longest sequence of unique states a pattern travels through (stop counting once it reaches a previously-visited state, beginning an infinite loop)?
 
 * What is the longest cycle of unique states that repeats in a loop? (there's an example of a period 2 cycle in the example above)
+
+## A Few Photos
+
+Of logic diagrams, die renders, and the end result:
+
+![IMG_4218](https://github.com/icegoat9/tinytapeout03-7seglife/assets/85364179/0038c66d-dc67-4910-b241-972c18132222)
+![wokwi_partial](https://github.com/icegoat9/tinytapeout03-7seglife/assets/85364179/6e5943a3-1adb-4236-95c2-417359d1ff8c)
+![IMG_3401 (1)](https://github.com/icegoat9/tinytapeout03-7seglife/assets/85364179/91c0aa12-3f21-447d-ba35-5ee250c21dda)
+![IMG_4208-EDIT](https://github.com/icegoat9/tinytapeout03-7seglife/assets/85364179/af399a55-670b-4d28-b50e-2f1966bbf3c3)
+![IMG_4175](https://github.com/icegoat9/tinytapeout03-7seglife/assets/85364179/4d144025-104f-4977-8ca4-64a89ff7b496)
 
 ## Related Resources
 

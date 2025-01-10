@@ -4,10 +4,9 @@ An ASIC design for [Tiny Tapeout](https://tinytapeout.com) 03, designed in a few
 
 This implements a very simple 7-segment [cellular automaton](https://en.wikipedia.org/wiki/Cellular_automaton) from ~200 basic logic gates, using the [Wokwi web-based logic editor](https://tinytapeout.com/digital_design/wokwi/). When the Tiny Tapeout ASIC is fabricated and mounted on its standard carrier PCB (which includes 8 dip switch inputs and a 7 segment display as output), it should run the below behavior in hardware. 
 
-**UPDATE:** A year later, in April 2024, I've received a custom fabricated ASIC with this design... and it works! Here's a quick demo of loading an initial state into it and then putting it in run mode:
+**UPDATE:** A year later, in April 2024, I've received a custom fabricated ASIC with this design... and it works! Here's a quick demo of using digital inputs to load a specific initial state into it, and then putting it in run mode:
 
-https://github.com/icegoat9/tinytapeout03-7seglife/assets/...
-
+https://github.com/user-attachments/assets/e43d3b02-d3db-4b02-a358-d3ad533b861c
 
 ## Automata Behavior
 
